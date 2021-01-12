@@ -1,4 +1,4 @@
-# Ceph - a scalable distributed storage system
+# Loomio - an optimized version of Ceph
 
 Please see http://ceph.com/ for current info.
 
@@ -200,4 +200,45 @@ To build the documentation, ensure that you are in the top-level
 `/ceph` directory, and execute the build script. For example:
 
 	admin/build-doc
+## 开启多个redis
+1、在主节点上把redis_install.sh和redis_start.sh脚本放到各个节点的/users/yushua/下并更改权限
+/local/repository/Utils.sh 9 PUT " /users/yushua/*.sh"  /users/yushua/
+/local/repository/Utils.sh 9 CMD "chmod a+x /users/yushua/*.sh"
+
+2、每个节点都执行安装脚本redis_install.sh
+/local/repository/Utils.sh 8 CMD "/users/yushua/redis_install.sh"
+以下为脚本内容：
+cd /users/yushua/
+wget http://download.redis.io/releases/redis-5.0.8.tar.gz
+tar -zxvf redis-5.0.8.tar.gz
+cd redis-5.0.8
+make
+#修改redis.conf中daemonize 为yes
+#修改redis.conf中stop-writes-on-bgsave-error为no //否则会出现无法get的错误
+sed -i 's/daemonize no/daemonize yes/' redis.conf
+sed -i 's/stop-writes-on-bgsave-error yes/stop-writes-on-bgsave-error no/' redis.conf
+
+3、再安装hiredis，主节点执行脚本hiredis
+cd /users/yushua/env
+git clone https://github.com/redis/hiredis.git
+cd hiredis
+make
+/local/repository/Utils.sh 9 CMD "/local/repository/installation/luminous_redis.sh" #主节点上运行该脚本安装hiredis
+#以下为hiredis脚本内容：
+cd /users/yushua/env/hiredis/; sudo make install
+sudo sh -c 'echo /usr/local/lib >> /etc/ld.so.conf'
+sudo ldconfig
+
+4、每个节点上都开启redis，修改IP地址，主节点上执行脚本 redis_start 
+/users/yushua/redis_start.sh
+以下为脚本内容：
+for i in $(seq 0 7)
+do
+    num=`expr $i + 1`
+    ssh node-$i "sudo sed -i 's/bind 127.0.0.1/bind 10.10.1.$num/' /users/yushua/redis-5.0.8/redis.conf" &&
+    echo "node-$i IP replaced"
+done
+echo "starting redis.."
+/local/repository/Utils.sh 8 CMD "/users/yushua/redis-5.0.8/src/redis-server /users/yushua/redis-5.0.8/redis.conf"
+/local/repository/Utils.sh 8 CMD "ps -ef|grep redis"  # 是否启动成功
 
