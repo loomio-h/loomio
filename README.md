@@ -25,6 +25,7 @@ contributed under the terms of the applicable license.
 
 You can clone from github with
 
+	git clone git@github.com:ceph/cephfgdnbhdfsdfsdfsdfawehkkkk
 	git clone git@github.com:ceph/ceph
 
 or, if you are not a github user,
