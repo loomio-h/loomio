@@ -24,7 +24,7 @@ Install ceph, This step needs to be installed according to your own environment
 
 ### the second step
 
-Install redis
+Install redis,Install separately on each node.
 	
 	cd [your installation directory]
 	wget http://download.redis.io/releases/redis-5.0.8.tar.gz
@@ -35,7 +35,7 @@ Install redis
 
 ### the third step
 
-Compile hiredis
+Compile hiredis on each node
 	
 	cd [your installation directory]
 	git clone https://github.com/redis/hiredis.git
